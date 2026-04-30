@@ -21,6 +21,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "preinstall": "node scripts/ensure-libuiohook.js",
     "install": "node-gyp-build",
     "prebuild": "prebuildify --napi",
     "build-ts": "tsc",
@@ -33,6 +34,7 @@
     "binding.gyp",
     "libuiohook/src",
     "libuiohook/include",
+    "scripts",
     "src/lib",
     "prebuilds"
   ],
