@@ -1,12 +1,18 @@
 {
-  "name": "uiohook-napi",
+  "name": "@fainthit/uiohook-napi-suppress",
   "version": "1.5.5",
-  "author": {
-    "name": "Alexander Drozdov"
-  },
+  "description": "Fork of uiohook-napi with configurable keyboard shortcut suppression support.",
+  "author": "hinaple",
+  "contributors": [
+    "Alexander Drozdov"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/SnosMe/uiohook-napi.git"
+    "url": "git+https://github.com/hinaple/uiohook-napi-suppress.git"
+  },
+  "homepage": "https://github.com/hinaple/uiohook-napi-suppress#readme",
+  "bugs": {
+    "url": "https://github.com/hinaple/uiohook-napi-suppress/issues"
   },
   "license": "MIT",
   "keywords": [
@@ -49,6 +55,9 @@
     "test": "dist/prebuild-test-noop.js"
   },
   "gypfile": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">= 16"
   }
