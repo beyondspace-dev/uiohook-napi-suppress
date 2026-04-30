@@ -6,6 +6,7 @@ interface AddonExports {
   start (cb: (e: any) => void): void
   stop (): void
   keyTap (key: number, type: KeyToggle): void
+  setKeyboardSuppressShortcuts (shortcuts: UiohookKeyboardSuppressShortcut[]): void
 }
 
 enum KeyToggle {
@@ -32,6 +33,14 @@ export interface UiohookKeyboardEvent {
   metaKey: boolean
   shiftKey: boolean
   keycode: number
+}
+
+export interface UiohookKeyboardSuppressShortcut {
+  keycode: number
+  altKey?: boolean
+  ctrlKey?: boolean
+  metaKey?: boolean
+  shiftKey?: boolean
 }
 
 export interface UiohookMouseEvent {
@@ -209,9 +218,21 @@ declare interface UiohookNapi {
   on(event: 'click', listener: (e: UiohookMouseEvent) => void): this
 
   on(event: 'wheel', listener: (e: UiohookWheelEvent) => void): this
+
+  registerSuppress(shortcuts: UiohookKeyboardSuppressShortcut[]): number
+  unregisterSuppress(registrationId: number): void
+  toggleSuppress(registrationId: number, enabled: boolean): void
+}
+
+interface SuppressRegistration {
+  shortcuts: UiohookKeyboardSuppressShortcut[]
+  enabled: boolean
 }
 
 class UiohookNapi extends EventEmitter {
+  private nextShortcutRegistrationId = 1
+  private suppressRegistrations = new Map<number, SuppressRegistration>()
+
   private handler (e: UiohookKeyboardEvent | UiohookMouseEvent | UiohookWheelEvent) {
     this.emit('input', e)
     switch (e.type) {
@@ -265,6 +286,38 @@ class UiohookNapi extends EventEmitter {
 
   keyToggle (key: number, toggle: 'down' | 'up') {
     lib.keyTap(key, (toggle === 'down' ? KeyToggle.Down : KeyToggle.Up))
+  }
+
+  private syncKeyboardSuppressShortcuts () {
+    const merged = [...this.suppressRegistrations.values()]
+      .filter((registration) => registration.enabled)
+      .flatMap((registration) => registration.shortcuts)
+    lib.setKeyboardSuppressShortcuts(merged)
+  }
+
+  registerSuppress (shortcuts: UiohookKeyboardSuppressShortcut[]) {
+    const registrationId = this.nextShortcutRegistrationId++
+    this.suppressRegistrations.set(registrationId, { shortcuts, enabled: true })
+    this.syncKeyboardSuppressShortcuts()
+    return registrationId
+  }
+
+  unregisterSuppress (registrationId: number) {
+    if (!this.suppressRegistrations.delete(registrationId)) {
+      return
+    }
+
+    this.syncKeyboardSuppressShortcuts()
+  }
+
+  toggleSuppress (registrationId: number, enabled: boolean) {
+    const registration = this.suppressRegistrations.get(registrationId)
+    if (!registration || registration.enabled === enabled) {
+      return
+    }
+
+    registration.enabled = enabled
+    this.syncKeyboardSuppressShortcuts()
   }
 }
 

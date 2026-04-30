@@ -39,6 +39,9 @@ interface UiohookNapi {
 
   on(event: 'wheel', listener: (e: UiohookWheelEvent) => void): this
 
+  registerSuppress(shortcuts: UiohookKeyboardSuppressShortcut[]): number
+  unregisterSuppress(registrationId: number)
+  toggleSuppress(registrationId: number, enabled: boolean)
   keyTap(key: keycode, modifiers?: keycode[])
   keyToggle(key: keycode, toggle: 'down' | 'up')
 }
@@ -49,6 +52,14 @@ export interface UiohookKeyboardEvent {
   metaKey: boolean
   shiftKey: boolean
   keycode: number
+}
+
+export interface UiohookKeyboardSuppressShortcut {
+  keycode: number
+  altKey?: boolean
+  ctrlKey?: boolean
+  metaKey?: boolean
+  shiftKey?: boolean
 }
 
 export interface UiohookMouseEvent {
@@ -75,3 +86,26 @@ export interface UiohookWheelEvent {
   rotation: number
 }
 ```
+
+### Shortcut suppression
+
+Register shortcuts once, then toggle or unregister them later:
+
+```typescript
+import { uIOhook, UiohookKey } from 'uiohook-napi'
+
+const suppressId = uIOhook.registerSuppress([
+  { keycode: UiohookKey.Meta },
+  { keycode: UiohookKey.R, metaKey: true },
+  { keycode: UiohookKey.Tab, altKey: true },
+  { keycode: UiohookKey.F4, altKey: true }
+])
+
+uIOhook.start()
+
+uIOhook.toggleSuppress(suppressId, false)
+uIOhook.toggleSuppress(suppressId, true)
+uIOhook.unregisterSuppress(suppressId)
+```
+
+The shortcut match is exact for `ctrlKey`, `altKey`, `shiftKey`, and `metaKey`. For modifier-only shortcuts like `Meta`, `Ctrl`, `Shift`, or `Alt`, passing the base keycode matches either left or right side. Use `MetaRight`, `AltRight`, `CtrlRight`, or `ShiftRight` if you need the right-side key specifically.

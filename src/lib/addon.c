@@ -277,6 +277,145 @@ typedef enum {
   force_uint = 0xFFFFFFFF
 } key_tap_type;
 
+static napi_status get_named_bool_property(napi_env env, napi_value object, const char* name, bool* result) {
+  napi_status status;
+  bool has_property;
+  status = napi_has_named_property(env, object, name, &has_property);
+  if (status != napi_ok || !has_property) {
+    return status;
+  }
+
+  napi_value value;
+  status = napi_get_named_property(env, object, name, &value);
+  if (status != napi_ok) {
+    return status;
+  }
+
+  return napi_get_value_bool(env, value, result);
+}
+
+napi_value AddonSetKeyboardSuppressShortcuts(napi_env env, napi_callback_info info) {
+  napi_status status;
+
+  size_t info_argc = 1;
+  napi_value info_argv[1];
+  status = napi_get_cb_info(env, info, &info_argc, info_argv, NULL, NULL);
+  NAPI_THROW_IF_FAILED(env, status, NULL);
+
+  bool is_array;
+  status = napi_is_array(env, info_argv[0], &is_array);
+  NAPI_THROW_IF_FAILED(env, status, NULL);
+  if (!is_array) {
+    NAPI_THROW(env, "UIOHOOK_SUPPRESS_SHORTCUTS_INVALID", "Expected an array of keyboard suppression shortcuts.", NULL);
+  }
+
+  uint32_t length;
+  status = napi_get_array_length(env, info_argv[0], &length);
+  NAPI_THROW_IF_FAILED(env, status, NULL);
+
+  suppress_shortcut_t* shortcuts = NULL;
+  if (length > 0) {
+    shortcuts = malloc(sizeof(suppress_shortcut_t) * length);
+    if (shortcuts == NULL) {
+      NAPI_THROW(env, "UIOHOOK_ERROR_OUT_OF_MEMORY", "Failed to allocate keyboard suppression shortcuts.", NULL);
+    }
+  }
+
+  for (uint32_t i = 0; i < length; i++) {
+    napi_value shortcut_value;
+    status = napi_get_element(env, info_argv[0], i, &shortcut_value);
+    if (status != napi_ok) {
+      free(shortcuts);
+      NAPI_THROW_IF_FAILED(env, status, NULL);
+    }
+
+    napi_value keycode_value;
+    status = napi_get_named_property(env, shortcut_value, "keycode", &keycode_value);
+    if (status != napi_ok) {
+      free(shortcuts);
+      NAPI_THROW_IF_FAILED(env, status, NULL);
+    }
+
+    uint32_t keycode;
+    status = napi_get_value_uint32(env, keycode_value, &keycode);
+    if (status != napi_ok) {
+      free(shortcuts);
+      NAPI_THROW_IF_FAILED(env, status, NULL);
+    }
+
+    bool alt_key = false;
+    bool ctrl_key = false;
+    bool meta_key = false;
+    bool shift_key = false;
+
+    status = get_named_bool_property(env, shortcut_value, "altKey", &alt_key);
+    if (status != napi_ok) {
+      free(shortcuts);
+      NAPI_THROW_IF_FAILED(env, status, NULL);
+    }
+
+    status = get_named_bool_property(env, shortcut_value, "ctrlKey", &ctrl_key);
+    if (status != napi_ok) {
+      free(shortcuts);
+      NAPI_THROW_IF_FAILED(env, status, NULL);
+    }
+
+    status = get_named_bool_property(env, shortcut_value, "metaKey", &meta_key);
+    if (status != napi_ok) {
+      free(shortcuts);
+      NAPI_THROW_IF_FAILED(env, status, NULL);
+    }
+
+    status = get_named_bool_property(env, shortcut_value, "shiftKey", &shift_key);
+    if (status != napi_ok) {
+      free(shortcuts);
+      NAPI_THROW_IF_FAILED(env, status, NULL);
+    }
+
+    uint16_t mask = 0;
+    if (alt_key) {
+      mask |= MASK_ALT;
+    }
+    if (ctrl_key) {
+      mask |= MASK_CTRL;
+    }
+    if (meta_key) {
+      mask |= MASK_META;
+    }
+    if (shift_key) {
+      mask |= MASK_SHIFT;
+    }
+
+    switch (keycode) {
+    case VC_SHIFT_L:
+    case VC_SHIFT_R:
+      mask |= MASK_SHIFT;
+      break;
+    case VC_CONTROL_L:
+    case VC_CONTROL_R:
+      mask |= MASK_CTRL;
+      break;
+    case VC_ALT_L:
+    case VC_ALT_R:
+      mask |= MASK_ALT;
+      break;
+    case VC_META_L:
+    case VC_META_R:
+      mask |= MASK_META;
+      break;
+    default:
+      break;
+    }
+
+    shortcuts[i].keycode = (uint16_t) keycode;
+    shortcuts[i].mask = mask;
+  }
+
+  uiohook_worker_set_suppress_shortcuts(shortcuts, length);
+  free(shortcuts);
+  return NULL;
+}
+
 napi_value AddonKeyTap (napi_env env, napi_callback_info info) {
   napi_status status;
 
@@ -328,6 +467,11 @@ NAPI_MODULE_INIT() {
   status = napi_create_function(env, NULL, 0, AddonKeyTap, NULL, &export_fn);
   NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_create_function");
   status = napi_set_named_property(env, exports, "keyTap", export_fn);
+  NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_set_named_property");
+
+  status = napi_create_function(env, NULL, 0, AddonSetKeyboardSuppressShortcuts, NULL, &export_fn);
+  NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_create_function");
+  status = napi_set_named_property(env, exports, "setKeyboardSuppressShortcuts", export_fn);
   NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_set_named_property");
 
   status = napi_add_env_cleanup_hook(env, AddonCleanUp, NULL);

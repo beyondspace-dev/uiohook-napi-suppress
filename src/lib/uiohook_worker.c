@@ -1,5 +1,7 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <uiohook.h>
 #include <uv.h>
 
@@ -18,8 +20,87 @@ static int hook_thread_status;
 static uv_mutex_t hook_running_mutex;
 static uv_mutex_t hook_control_mutex;
 static uv_cond_t hook_control_cond;
+static uv_mutex_t suppress_shortcuts_mutex;
+static uv_once_t suppress_shortcuts_once = UV_ONCE_INIT;
 
 static dispatcher_t user_dispatcher = NULL;
+static suppress_shortcut_t* suppress_shortcuts = NULL;
+static size_t suppress_shortcut_count = 0;
+
+static void init_suppress_shortcuts_mutex(void) {
+  uv_mutex_init(&suppress_shortcuts_mutex);
+}
+
+static inline uint16_t get_primary_modifier_mask(uint16_t keycode) {
+  switch (keycode) {
+  case VC_SHIFT_L:
+  case VC_SHIFT_R:
+    return MASK_SHIFT;
+  case VC_CONTROL_L:
+  case VC_CONTROL_R:
+    return MASK_CTRL;
+  case VC_ALT_L:
+  case VC_ALT_R:
+    return MASK_ALT;
+  case VC_META_L:
+  case VC_META_R:
+    return MASK_META;
+  default:
+    return 0;
+  }
+}
+
+static inline bool keycode_matches_shortcut(uint16_t shortcut_keycode, uint16_t event_keycode) {
+  switch (shortcut_keycode) {
+  case VC_SHIFT_L:
+    return event_keycode == VC_SHIFT_L || event_keycode == VC_SHIFT_R;
+  case VC_CONTROL_L:
+    return event_keycode == VC_CONTROL_L || event_keycode == VC_CONTROL_R;
+  case VC_ALT_L:
+    return event_keycode == VC_ALT_L || event_keycode == VC_ALT_R;
+  case VC_META_L:
+    return event_keycode == VC_META_L || event_keycode == VC_META_R;
+  default:
+    return shortcut_keycode == event_keycode;
+  }
+}
+
+static inline uint16_t normalize_modifier_mask(uint16_t mask) {
+  return mask & (MASK_SHIFT | MASK_CTRL | MASK_ALT | MASK_META);
+}
+
+static bool matches_suppress_shortcut(uiohook_event* const event) {
+  bool matches = false;
+
+  if (event->type != EVENT_KEY_PRESSED && event->type != EVENT_KEY_RELEASED) {
+    return false;
+  }
+
+  const uint16_t keycode = event->data.keyboard.keycode;
+  uint16_t mask = normalize_modifier_mask(event->mask);
+  mask |= get_primary_modifier_mask(keycode);
+
+  uv_once(&suppress_shortcuts_once, init_suppress_shortcuts_mutex);
+  uv_mutex_lock(&suppress_shortcuts_mutex);
+
+  for (size_t i = 0; i < suppress_shortcut_count; i++) {
+    if (!keycode_matches_shortcut(suppress_shortcuts[i].keycode, keycode)) {
+      continue;
+    }
+
+    if (suppress_shortcuts[i].mask == mask) {
+      matches = true;
+      break;
+    }
+  }
+
+  uv_mutex_unlock(&suppress_shortcuts_mutex);
+  return matches;
+}
+
+static bool should_consume_event(uiohook_event* const event) {
+  return matches_suppress_shortcut(event);
+}
 
 bool logger_proc(unsigned int level, const char* format, ...) {
   bool status = false;
@@ -44,6 +125,10 @@ bool logger_proc(unsigned int level, const char* format, ...) {
 // takes to long to process.  If you need to do any extended processing, please 
 // do so by copying the event to your own queued dispatch thread.
 void worker_dispatch_proc(uiohook_event* const event) {
+  if (should_consume_event(event)) {
+    event->reserved = 0x01;
+  }
+
   switch (event->type) {
   case EVENT_HOOK_ENABLED:
     // Lock the running mutex so we know if the hook is enabled.
@@ -198,4 +283,24 @@ int uiohook_worker_stop() {
   }
 
   return status;
+}
+
+void uiohook_worker_set_suppress_shortcuts(const suppress_shortcut_t* shortcuts, size_t count) {
+  suppress_shortcut_t* copied_shortcuts = NULL;
+  uv_once(&suppress_shortcuts_once, init_suppress_shortcuts_mutex);
+
+  if (count > 0) {
+    copied_shortcuts = malloc(sizeof(suppress_shortcut_t) * count);
+    if (copied_shortcuts == NULL) {
+      return;
+    }
+
+    memcpy(copied_shortcuts, shortcuts, sizeof(suppress_shortcut_t) * count);
+  }
+
+  uv_mutex_lock(&suppress_shortcuts_mutex);
+  free(suppress_shortcuts);
+  suppress_shortcuts = copied_shortcuts;
+  suppress_shortcut_count = count;
+  uv_mutex_unlock(&suppress_shortcuts_mutex);
 }
