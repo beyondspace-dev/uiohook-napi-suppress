@@ -7,6 +7,7 @@
 #define UIOHOOK_ERROR_THREAD_CREATE				0x10
 
 typedef struct {
+  bool any_keycode;
   uint16_t keycode;
   uint16_t mask;
 } suppress_shortcut_t;

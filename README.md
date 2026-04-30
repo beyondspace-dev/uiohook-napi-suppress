@@ -1,5 +1,7 @@
 # @fainthit/uiohook-napi-suppress
 
+[English](./README.md) | [한국어](./README_ko.md)
+
 [![](https://img.shields.io/npm/v/%40fainthit%2Fuiohook-napi-suppress?color=CC3534&label=%40fainthit%2Fuiohook-napi-suppress&logo=npm&labelColor=212121)](https://www.npmjs.com/package/@fainthit/uiohook-napi-suppress)
 
 Fork of [SnosMe/uiohook-napi](https://github.com/SnosMe/uiohook-napi) with configurable keyboard shortcut suppression support.
@@ -42,9 +44,7 @@ Register shortcuts once, then toggle or unregister them later:
 import { uIOhook, UiohookKey } from '@fainthit/uiohook-napi-suppress'
 
 const suppressId = uIOhook.registerSuppress([
-  { keycode: UiohookKey.Meta },
-  { keycode: UiohookKey.R, metaKey: true },
-  { keycode: UiohookKey.Tab, altKey: true },
+  { metaKey: true },
   { keycode: UiohookKey.F4, altKey: true }
 ])
 
@@ -55,7 +55,9 @@ uIOhook.toggleSuppress(suppressId, true)
 uIOhook.unregisterSuppress(suppressId)
 ```
 
-The shortcut match is exact for `ctrlKey`, `altKey`, `shiftKey`, and `metaKey`. For modifier-only shortcuts like `Meta`, `Ctrl`, `Shift`, or `Alt`, passing the base keycode matches either left or right side. Use `MetaRight`, `AltRight`, `CtrlRight`, or `ShiftRight` if you need the right-side key specifically.
+The shortcut match is exact for `ctrlKey`, `altKey`, `shiftKey`, and `metaKey` when `keycode` is present. For modifier-only shortcuts like `Meta`, `Ctrl`, `Shift`, or `Alt`, passing the base keycode matches either left or right side. Use `MetaRight`, `AltRight`, `CtrlRight`, or `ShiftRight` if you need the right-side key specifically.
+
+If you omit `keycode` and provide one or more modifiers, that rule suppresses every key pressed while those modifiers are active. For example, `{ metaKey: true }` suppresses `Meta` itself, `Meta+R`, `Meta+Tab`, and `Meta+Shift+R`.
 
 ## API
 
@@ -87,7 +89,7 @@ export interface UiohookKeyboardEvent {
 }
 
 export interface UiohookKeyboardSuppressShortcut {
-  keycode: number
+  keycode?: number
   altKey?: boolean
   ctrlKey?: boolean
   metaKey?: boolean

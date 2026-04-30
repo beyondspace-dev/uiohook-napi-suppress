@@ -36,7 +36,7 @@ export interface UiohookKeyboardEvent {
 }
 
 export interface UiohookKeyboardSuppressShortcut {
-  keycode: number
+  keycode?: number
   altKey?: boolean
   ctrlKey?: boolean
   metaKey?: boolean

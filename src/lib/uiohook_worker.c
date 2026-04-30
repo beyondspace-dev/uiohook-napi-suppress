@@ -84,6 +84,14 @@ static bool matches_suppress_shortcut(uiohook_event* const event) {
   uv_mutex_lock(&suppress_shortcuts_mutex);
 
   for (size_t i = 0; i < suppress_shortcut_count; i++) {
+    if (suppress_shortcuts[i].any_keycode) {
+      if ((mask & suppress_shortcuts[i].mask) == suppress_shortcuts[i].mask) {
+        matches = true;
+        break;
+      }
+      continue;
+    }
+
     if (!keycode_matches_shortcut(suppress_shortcuts[i].keycode, keycode)) {
       continue;
     }

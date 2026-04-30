@@ -329,18 +329,27 @@ napi_value AddonSetKeyboardSuppressShortcuts(napi_env env, napi_callback_info in
       NAPI_THROW_IF_FAILED(env, status, NULL);
     }
 
-    napi_value keycode_value;
-    status = napi_get_named_property(env, shortcut_value, "keycode", &keycode_value);
+    bool has_keycode;
+    status = napi_has_named_property(env, shortcut_value, "keycode", &has_keycode);
     if (status != napi_ok) {
       free(shortcuts);
       NAPI_THROW_IF_FAILED(env, status, NULL);
     }
 
-    uint32_t keycode;
-    status = napi_get_value_uint32(env, keycode_value, &keycode);
-    if (status != napi_ok) {
-      free(shortcuts);
-      NAPI_THROW_IF_FAILED(env, status, NULL);
+    uint32_t keycode = 0;
+    if (has_keycode) {
+      napi_value keycode_value;
+      status = napi_get_named_property(env, shortcut_value, "keycode", &keycode_value);
+      if (status != napi_ok) {
+        free(shortcuts);
+        NAPI_THROW_IF_FAILED(env, status, NULL);
+      }
+
+      status = napi_get_value_uint32(env, keycode_value, &keycode);
+      if (status != napi_ok) {
+        free(shortcuts);
+        NAPI_THROW_IF_FAILED(env, status, NULL);
+      }
     }
 
     bool alt_key = false;
@@ -386,27 +395,35 @@ napi_value AddonSetKeyboardSuppressShortcuts(napi_env env, napi_callback_info in
       mask |= MASK_SHIFT;
     }
 
-    switch (keycode) {
-    case VC_SHIFT_L:
-    case VC_SHIFT_R:
-      mask |= MASK_SHIFT;
-      break;
-    case VC_CONTROL_L:
-    case VC_CONTROL_R:
-      mask |= MASK_CTRL;
-      break;
-    case VC_ALT_L:
-    case VC_ALT_R:
-      mask |= MASK_ALT;
-      break;
-    case VC_META_L:
-    case VC_META_R:
-      mask |= MASK_META;
-      break;
-    default:
-      break;
+    if (!has_keycode && mask == 0) {
+      free(shortcuts);
+      NAPI_THROW(env, "UIOHOOK_SUPPRESS_SHORTCUTS_INVALID", "A suppress shortcut without keycode must set at least one modifier.", NULL);
     }
 
+    if (has_keycode) {
+      switch (keycode) {
+      case VC_SHIFT_L:
+      case VC_SHIFT_R:
+        mask |= MASK_SHIFT;
+        break;
+      case VC_CONTROL_L:
+      case VC_CONTROL_R:
+        mask |= MASK_CTRL;
+        break;
+      case VC_ALT_L:
+      case VC_ALT_R:
+        mask |= MASK_ALT;
+        break;
+      case VC_META_L:
+      case VC_META_R:
+        mask |= MASK_META;
+        break;
+      default:
+        break;
+      }
+    }
+
+    shortcuts[i].any_keycode = !has_keycode;
     shortcuts[i].keycode = (uint16_t) keycode;
     shortcuts[i].mask = mask;
   }
