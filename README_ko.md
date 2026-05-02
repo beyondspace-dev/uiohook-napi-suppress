@@ -18,6 +18,8 @@
 npm install @fainthit/uiohook-napi-suppress
 ```
 
+이 저장소에서 직접 작업할 때 `libuiohook` 서브모듈이 초기 상태이거나 깨끗한 상태라면, 네이티브 빌드 전에 `npm run prepare-libuiohook`를 실행하세요. 이 명령은 필요한 경우 서브모듈을 초기화하고 `src/libuiohook.patch`를 적용합니다.
+
 ## 사용법
 
 ```typescript

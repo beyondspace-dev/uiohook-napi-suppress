@@ -18,6 +18,8 @@ This package keeps the original `uiohook-napi` API and adds suppression helpers:
 npm install @fainthit/uiohook-napi-suppress
 ```
 
+When working from this repository, run `npm run prepare-libuiohook` before local native builds if the `libuiohook` submodule is clean or freshly initialized. That command initializes the submodule when needed and applies `src/libuiohook.patch`.
+
 ## Usage
 
 ```typescript

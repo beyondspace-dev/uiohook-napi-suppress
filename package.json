@@ -1,6 +1,6 @@
 {
     "name": "@fainthit/uiohook-napi-suppress",
-    "version": "1.6.1",
+    "version": "1.6.2",
     "description": "Fork of uiohook-napi with configurable keyboard shortcut suppression support.",
     "author": "hinaple",
     "contributors": [
@@ -27,11 +27,12 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
+        "prepare-libuiohook": "node scripts/prepare-libuiohook.js",
         "install": "node-gyp-build",
-        "prebuild": "prebuildify --napi",
+        "prebuild": "npm run prepare-libuiohook && prebuildify --napi",
         "build-ts": "tsc",
         "demo": "ts-node src/demo.ts",
-        "make-libuiohook-patch": "git -C ./libuiohook diff --cached > ./src/libuiohook.patch",
+        "make-libuiohook-patch": "node scripts/make-libuiohook-patch.js",
         "apply-libuiohook-patch": "git -C ./libuiohook apply ../src/libuiohook.patch"
     },
     "files": [
@@ -39,6 +40,7 @@
         "binding.gyp",
         "libuiohook/src",
         "libuiohook/include",
+        "scripts",
         "src/lib",
         "prebuilds"
     ],

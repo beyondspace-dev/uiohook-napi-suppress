@@ -7,7 +7,12 @@ const keycodeMap = new Map(Object.entries(UiohookKey).map((_) => [_[1], _[0]]));
         { metaKey: true },
         { keycode: UiohookKey.F4, altKey: true },
     ]);
-    console.log("Suppress is registered for all Meta shortcuts and Alt+F4. Press Escape to exit.");
+    uIOhook.toggleSuppress(suppressId, true);
+    console.log(
+        "Suppress is registered for all Meta shortcuts and Alt+F4. Press Escape to exit.",
+    );
+
+    let isSuppressing = true;
 
     uIOhook.on("keydown", (e) => {
         console.log(
@@ -20,6 +25,10 @@ const keycodeMap = new Map(Object.entries(UiohookKey).map((_) => [_[1], _[0]]));
             uIOhook.unregisterSuppress(suppressId);
             uIOhook.stop();
             process.exit(0);
+        }
+        if (e.keycode === UiohookKey.Enter) {
+            uIOhook.toggleSuppress(suppressId, !isSuppressing);
+            isSuppressing = !isSuppressing;
         }
     });
 
