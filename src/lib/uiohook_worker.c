@@ -68,16 +68,16 @@ static inline bool keycode_matches_shortcut(uint16_t shortcut_keycode, uint16_t 
 static inline uint16_t to_generic_modifier_mask(uint16_t mask) {
   uint16_t generic_mask = 0;
 
-  if (mask & MASK_SHIFT) {
+  if (mask & (MASK_SHIFT)) {
     generic_mask |= MASK_SHIFT;
   }
-  if (mask & MASK_CTRL) {
+  if (mask & (MASK_CTRL)) {
     generic_mask |= MASK_CTRL;
   }
-  if (mask & MASK_ALT) {
+  if (mask & (MASK_ALT)) {
     generic_mask |= MASK_ALT;
   }
-  if (mask & MASK_META) {
+  if (mask & (MASK_META)) {
     generic_mask |= MASK_META;
   }
 
