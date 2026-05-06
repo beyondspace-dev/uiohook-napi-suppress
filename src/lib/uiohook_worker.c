@@ -65,8 +65,32 @@ static inline bool keycode_matches_shortcut(uint16_t shortcut_keycode, uint16_t 
   }
 }
 
-static inline uint16_t normalize_modifier_mask(uint16_t mask) {
-  return mask & (MASK_SHIFT | MASK_CTRL | MASK_ALT | MASK_META);
+static inline uint16_t to_generic_modifier_mask(uint16_t mask) {
+  uint16_t generic_mask = 0;
+
+  if (mask & MASK_SHIFT) {
+    generic_mask |= MASK_SHIFT;
+  }
+  if (mask & MASK_CTRL) {
+    generic_mask |= MASK_CTRL;
+  }
+  if (mask & MASK_ALT) {
+    generic_mask |= MASK_ALT;
+  }
+  if (mask & MASK_META) {
+    generic_mask |= MASK_META;
+  }
+
+  return generic_mask;
+}
+
+static inline void normalize_keyboard_event(uiohook_event* const event) {
+  if (event->type != EVENT_KEY_PRESSED && event->type != EVENT_KEY_RELEASED) {
+    return;
+  }
+
+  event->mask = to_generic_modifier_mask(event->mask);
+  event->mask |= get_primary_modifier_mask(event->data.keyboard.keycode);
 }
 
 static bool matches_suppress_shortcut(uiohook_event* const event) {
@@ -77,8 +101,7 @@ static bool matches_suppress_shortcut(uiohook_event* const event) {
   }
 
   const uint16_t keycode = event->data.keyboard.keycode;
-  uint16_t mask = normalize_modifier_mask(event->mask);
-  mask |= get_primary_modifier_mask(keycode);
+  uint16_t mask = event->mask;
 
   uv_once(&suppress_shortcuts_once, init_suppress_shortcuts_mutex);
   uv_mutex_lock(&suppress_shortcuts_mutex);
@@ -133,6 +156,8 @@ bool logger_proc(unsigned int level, const char* format, ...) {
 // takes to long to process.  If you need to do any extended processing, please 
 // do so by copying the event to your own queued dispatch thread.
 void worker_dispatch_proc(uiohook_event* const event) {
+  normalize_keyboard_event(event);
+
   if (should_consume_event(event)) {
     event->reserved = 0x01;
   }

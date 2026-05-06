@@ -1,6 +1,6 @@
 {
     "name": "@fainthit/uiohook-napi-suppress",
-    "version": "1.6.2",
+    "version": "1.6.3",
     "description": "Fork of uiohook-napi with configurable keyboard shortcut suppression support.",
     "author": "hinaple",
     "contributors": [

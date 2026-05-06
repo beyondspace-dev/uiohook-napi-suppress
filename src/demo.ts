@@ -6,10 +6,11 @@ const keycodeMap = new Map(Object.entries(UiohookKey).map((_) => [_[1], _[0]]));
     const suppressId = uIOhook.registerSuppress([
         { metaKey: true },
         { keycode: UiohookKey.F4, altKey: true },
+        { keycode: UiohookKey.Escape, ctrlKey: true, shiftKey: true },
     ]);
     uIOhook.toggleSuppress(suppressId, true);
     console.log(
-        "Suppress is registered for all Meta shortcuts and Alt+F4. Press Escape to exit.",
+        "Suppress is enabled for Meta shortcuts, Alt+F4, and Ctrl+Shift+Esc. Press Enter to toggle, Escape to exit.",
     );
 
     let isSuppressing = true;
@@ -29,6 +30,7 @@ const keycodeMap = new Map(Object.entries(UiohookKey).map((_) => [_[1], _[0]]));
         if (e.keycode === UiohookKey.Enter) {
             uIOhook.toggleSuppress(suppressId, !isSuppressing);
             isSuppressing = !isSuppressing;
+            console.log(`Suppress ${isSuppressing ? "enabled" : "disabled"}.`);
         }
     });
 
