@@ -36,6 +36,7 @@
         "apply-libuiohook-patch": "git -C ./libuiohook apply ../src/libuiohook.patch"
     },
     "files": [
+        "README_ko.md",
         "dist",
         "binding.gyp",
         "libuiohook/src",
