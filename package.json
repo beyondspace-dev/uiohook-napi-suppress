@@ -1,67 +1,67 @@
 {
-    "name": "@fainthit/uiohook-napi-suppress",
-    "version": "1.6.4",
-    "description": "Fork of uiohook-napi with configurable keyboard shortcut suppression support.",
-    "author": "hinaple",
-    "contributors": [
-        "Alexander Drozdov"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hinaple/uiohook-napi-suppress.git"
-    },
-    "homepage": "https://github.com/hinaple/uiohook-napi-suppress#readme",
-    "bugs": {
-        "url": "https://github.com/hinaple/uiohook-napi-suppress/issues"
-    },
-    "license": "MIT",
-    "keywords": [
-        "iohook",
-        "uiohook",
-        "libuiohook",
-        "hook",
-        "input",
-        "keyboard",
-        "mouse"
-    ],
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "scripts": {
-        "prepare-libuiohook": "node scripts/prepare-libuiohook.js",
-        "install": "node-gyp-build",
-        "prebuild": "npm run prepare-libuiohook && prebuildify --napi",
-        "build-ts": "tsc",
-        "demo": "ts-node src/demo.ts",
-        "make-libuiohook-patch": "node scripts/make-libuiohook-patch.js",
-        "apply-libuiohook-patch": "git -C ./libuiohook apply ../src/libuiohook.patch"
-    },
-    "files": [
-        "README_ko.md",
-        "dist",
-        "binding.gyp",
-        "libuiohook/src",
-        "libuiohook/include",
-        "scripts",
-        "src/lib",
-        "prebuilds"
-    ],
-    "devDependencies": {
-        "@types/node": "^18.19.130",
-        "prebuildify": "^6.0.1",
-        "ts-node": "^10.9.2",
-        "typescript": "^5.9.3"
-    },
-    "dependencies": {
-        "node-gyp-build": "^4.8.4"
-    },
-    "prebuild": {
-        "test": "dist/prebuild-test-noop.js"
-    },
-    "gypfile": true,
-    "publishConfig": {
-        "access": "public"
-    },
-    "engines": {
-        "node": ">= 16"
-    }
+  "name": "@fainthit/uiohook-napi-suppress",
+  "version": "1.6.4",
+  "description": "Fork of uiohook-napi with configurable keyboard shortcut suppression support.",
+  "author": "beyondspace-dev",
+  "contributors": [
+    "Alexander Drozdov"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beyondspace-dev/uiohook-napi-suppress.git"
+  },
+  "homepage": "https://github.com/beyondspace-dev/uiohook-napi-suppress#readme",
+  "bugs": {
+    "url": "https://github.com/beyondspace-dev/uiohook-napi-suppress/issues"
+  },
+  "license": "MIT",
+  "keywords": [
+    "iohook",
+    "uiohook",
+    "libuiohook",
+    "hook",
+    "input",
+    "keyboard",
+    "mouse"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "prepare-libuiohook": "node scripts/prepare-libuiohook.js",
+    "install": "node-gyp-build",
+    "prebuild": "npm run prepare-libuiohook && prebuildify --napi",
+    "build-ts": "tsc",
+    "demo": "ts-node src/demo.ts",
+    "make-libuiohook-patch": "node scripts/make-libuiohook-patch.js",
+    "apply-libuiohook-patch": "git -C ./libuiohook apply ../src/libuiohook.patch"
+  },
+  "files": [
+    "README_ko.md",
+    "dist",
+    "binding.gyp",
+    "libuiohook/src",
+    "libuiohook/include",
+    "scripts",
+    "src/lib",
+    "prebuilds"
+  ],
+  "devDependencies": {
+    "@types/node": "^18.19.130",
+    "prebuildify": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "node-gyp-build": "^4.8.4"
+  },
+  "prebuild": {
+    "test": "dist/prebuild-test-noop.js"
+  },
+  "gypfile": true,
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">= 16"
+  }
 }

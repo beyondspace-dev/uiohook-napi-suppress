@@ -26,13 +26,13 @@ npm install @fainthit/uiohook-napi-suppress
 import { uIOhook, UiohookKey } from "@fainthit/uiohook-napi-suppress";
 
 uIOhook.on("keydown", (e) => {
-    if (e.keycode === UiohookKey.Q) {
-        console.log("Hello!");
-    }
+  if (e.keycode === UiohookKey.Q) {
+    console.log("Hello!");
+  }
 
-    if (e.keycode === UiohookKey.Escape) {
-        process.exit(0);
-    }
+  if (e.keycode === UiohookKey.Escape) {
+    process.exit(0);
+  }
 });
 
 uIOhook.start();
@@ -46,8 +46,8 @@ uIOhook.start();
 import { uIOhook, UiohookKey } from "@fainthit/uiohook-napi-suppress";
 
 const suppressId = uIOhook.registerSuppress([
-    { metaKey: true },
-    { keycode: UiohookKey.F4, altKey: true },
+  { metaKey: true },
+  { keycode: UiohookKey.F4, altKey: true },
 ]);
 
 uIOhook.start();
@@ -66,71 +66,71 @@ uIOhook.unregisterSuppress(suppressId);
 
 ```typescript
 interface UiohookNapi {
-    on(
-        event: "input",
-        listener: (
-            e: UiohookKeyboardEvent | UiohookMouseEvent | UiohookWheelEvent,
-        ) => void,
-    ): this;
+  on(
+    event: "input",
+    listener: (
+      e: UiohookKeyboardEvent | UiohookMouseEvent | UiohookWheelEvent,
+    ) => void,
+  ): this;
 
-    on(event: "keydown", listener: (e: UiohookKeyboardEvent) => void): this;
-    on(event: "keyup", listener: (e: UiohookKeyboardEvent) => void): this;
-    on(event: "mousedown", listener: (e: UiohookMouseEvent) => void): this;
-    on(event: "mouseup", listener: (e: UiohookMouseEvent) => void): this;
-    on(event: "mousemove", listener: (e: UiohookMouseEvent) => void): this;
-    on(event: "click", listener: (e: UiohookMouseEvent) => void): this;
+  on(event: "keydown", listener: (e: UiohookKeyboardEvent) => void): this;
+  on(event: "keyup", listener: (e: UiohookKeyboardEvent) => void): this;
+  on(event: "mousedown", listener: (e: UiohookMouseEvent) => void): this;
+  on(event: "mouseup", listener: (e: UiohookMouseEvent) => void): this;
+  on(event: "mousemove", listener: (e: UiohookMouseEvent) => void): this;
+  on(event: "click", listener: (e: UiohookMouseEvent) => void): this;
 
-    on(event: "wheel", listener: (e: UiohookWheelEvent) => void): this;
-    registerSuppress(shortcuts: UiohookKeyboardSuppressShortcut[]): number;
-    unregisterSuppress(registrationId: number);
-    toggleSuppress(registrationId: number, enabled: boolean);
-    keyTap(key: keycode, modifiers?: keycode[]);
-    keyToggle(key: keycode, toggle: "down" | "up");
+  on(event: "wheel", listener: (e: UiohookWheelEvent) => void): this;
+  registerSuppress(shortcuts: UiohookKeyboardSuppressShortcut[]): number;
+  unregisterSuppress(registrationId: number);
+  toggleSuppress(registrationId: number, enabled: boolean);
+  keyTap(key: keycode, modifiers?: keycode[]);
+  keyToggle(key: keycode, toggle: "down" | "up");
 }
 
 export interface UiohookKeyboardEvent {
-    altKey: boolean;
-    ctrlKey: boolean;
-    metaKey: boolean;
-    shiftKey: boolean;
-    keycode: number;
+  altKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean;
+  shiftKey: boolean;
+  keycode: number;
 }
 
 export interface UiohookKeyboardSuppressShortcut {
-    keycode?: number;
-    altKey?: boolean;
-    ctrlKey?: boolean;
-    metaKey?: boolean;
-    shiftKey?: boolean;
+  keycode?: number;
+  altKey?: boolean;
+  ctrlKey?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
 }
 
 export interface UiohookMouseEvent {
-    altKey: boolean;
-    ctrlKey: boolean;
-    metaKey: boolean;
-    shiftKey: boolean;
-    x: number;
-    y: number;
-    button: unknown;
-    clicks: number;
+  altKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean;
+  shiftKey: boolean;
+  x: number;
+  y: number;
+  button: unknown;
+  clicks: number;
 }
 
 export interface UiohookWheelEvent {
-    altKey: boolean;
-    ctrlKey: boolean;
-    metaKey: boolean;
-    shiftKey: boolean;
-    x: number;
-    y: number;
-    clicks: number;
-    amount: number;
-    direction: WheelDirection;
-    rotation: number;
+  altKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean;
+  shiftKey: boolean;
+  x: number;
+  y: number;
+  clicks: number;
+  amount: number;
+  direction: WheelDirection;
+  rotation: number;
 }
 ```
 
 ## 포크 정보
 
 - 원본 저장소: [SnosMe/uiohook-napi](https://github.com/SnosMe/uiohook-napi)
-- 포크 저장소: [hinaple/uiohook-napi-suppress](https://github.com/hinaple/uiohook-napi-suppress)
+- 포크 저장소: [beyondspace-dev/uiohook-napi-suppress](https://github.com/beyondspace-dev/uiohook-napi-suppress)
 - 이 포크는 `@fainthit/uiohook-napi-suppress` 이름으로 npm 배포하는 용도입니다.
